@@ -1,3 +1,6 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from "express";
 import { User } from "../models/user.model";
 import bcrypt from "bcryptjs";
@@ -6,6 +9,7 @@ import crypto from "crypto";
 import { generateVerificationCode } from "../utils/generateVerificationCode";
 import { generateToken } from "../utils/generateToken";
 import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/email";
+import cloudinary from "../utils/cloudinary";
 
 export const signup = async (req: Request, res: Response) => {
     try {
@@ -204,6 +208,7 @@ export const updateProfile = async (req: Request, res: Response) => {
         const { fullname, email, address, city, country, profilePicture } = req.body;
         // upload image on cloudinary
         let cloudResponse: any;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         cloudResponse = await cloudinary.uploader.upload(profilePicture);
         const updatedData = {fullname, email, address, city, country, profilePicture};
 

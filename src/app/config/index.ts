@@ -9,5 +9,6 @@ export default {
   api_name: process.env.API_NAME,
   api_key:process.env.API_KEY,
   api_secret:process.env.API_SECRET,
-  secret_key:process.env.SECRET_KEY
+  secret_key:process.env.SECRET_KEY,
+  mailtrap_key:process.env.MAILTRAPTOKEN
 };
