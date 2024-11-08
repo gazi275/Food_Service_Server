@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
 
@@ -17,7 +18,7 @@ export const sendVerificationEmail = async (email: string, verificationToken: st
             category: 'Email Verification'
         });
     } catch (error) {
-        console.log(error);
+      
         throw new Error("Failed to send email verification")
 
     }
@@ -30,15 +31,15 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
         const res = await client.send({
             from: sender,
             to: recipient,
-            subject: 'Welcome to PatelEats',
+            subject: 'Welcome',
             html:htmlContent,
             template_variables:{
-                company_info_name:"PatelEats",
+                company_info_name:"Azad",
                 name:name
             }
         });
     } catch (error) {
-        console.log(error);
+      
         throw new Error("Failed to send welcome email")
     }
 }
@@ -54,7 +55,7 @@ export const sendPasswordResetEmail = async (email:string, resetURL:string) => {
             category:"Reset Password"
         });
     } catch (error) {
-        console.log(error);
+    
         throw new Error("Failed to reset password")
     }
 }
@@ -70,7 +71,7 @@ export const sendResetSuccessEmail = async (email:string) => {
             category:"Password Reset"
         });
     } catch (error) {
-        console.log(error);
+ 
         throw new Error("Failed to send password reset success email");
     }
 }
