@@ -1,6 +1,9 @@
 import cors from 'cors';
-import express, { Application, Request, Response } from 'express';
+import express, { Application } from 'express';
 import { userRoutes } from './app/Routes/user.route';
+import { restaurantRoutes } from './app/Routes/resturant.route';
+import { menuroutes } from './app/Routes/menu.route';
+import { orderRoutes } from './app/Routes/order.route';
 
 
 const app: Application = express();
@@ -11,12 +14,12 @@ app.use(cors());
 
 // application routes
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/resturant", restaurantRoutes);
+app.use("/api/v1/menu", menuroutes);
+app.use("/api/v1/order", orderRoutes);
 
-const getAController = (req: Request, res: Response) => {
-  const a = 10;
-  res.send(a);
-};
 
-app.get('/', getAController);
+
+
 
 export default app;
