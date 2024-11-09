@@ -84,11 +84,13 @@ export const login = async (req: Request, res: Response) => {
 
 export const findUser=async(req:Request,res:Response)=>{
     try {
-        const result=await User.find().select("-password")
+        // const result=await User.find().select("-password")
+        const testUsers = await User.find();
+         console.log("Users:", testUsers);
         return res.status(200).json({
             success: true,
             message: 'User retrive successfully',
-            user: result
+            user: testUsers
         });
     } catch (error) {
         return res.status(500).json({ message: "User not created" }) 
