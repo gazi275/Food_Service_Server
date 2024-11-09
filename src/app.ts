@@ -1,5 +1,5 @@
 import cors from 'cors';
-import express, { Application } from 'express';
+import express, { Application, Request, Response } from 'express';
 import { userRoutes } from './app/Routes/user.route';
 import { restaurantRoutes } from './app/Routes/resturant.route';
 import { menuroutes } from './app/Routes/menu.route';
@@ -18,6 +18,11 @@ app.use("/api/v1/resturant", restaurantRoutes);
 app.use("/api/v1/menu", menuroutes);
 app.use("/api/v1/order", orderRoutes);
 
+const test = (req: Request, res: Response) => {
+    const a = 10;
+    res.send(a);
+  };
+app.get('/',test)
 
 
 

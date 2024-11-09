@@ -81,6 +81,19 @@ export const login = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" })
     }
 }
+
+export const findUser=async(req:Request,res:Response)=>{
+    try {
+        const result=await User.find().select("-password")
+        return res.status(200).json({
+            success: true,
+            message: 'User retrive successfully',
+            user: result
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "User not created" }) 
+    }
+}
 export const verifyEmail = async (req: Request, res: Response) => {
     try {
         const { verificationCode } = req.body;
