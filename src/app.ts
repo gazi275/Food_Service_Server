@@ -18,11 +18,9 @@ app.use("/api/v1/resturant", restaurantRoutes);
 app.use("/api/v1/menu", menuroutes);
 app.use("/api/v1/order", orderRoutes);
 
-const test = (req: Request, res: Response) => {
-    const a = 10;
-    res.send(a);
-  };
-app.get('/',test)
+app.use('/',async(req:Request,res:Response)=>{
+    res.send('server is running..!')
+})
 
 
 
