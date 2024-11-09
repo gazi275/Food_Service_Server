@@ -4,8 +4,9 @@ import { Request, Response } from "express";
 import { Order } from "../models/order.model";
 import Stripe from "stripe";
 import { Restaurant } from "../models/resturant.model";
+import config from "../config";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(config.stripeSecretKey!);
 
 type CheckoutSessionRequest = {
     cartItems: {
