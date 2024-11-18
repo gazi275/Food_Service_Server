@@ -5,24 +5,37 @@ import { restaurantRoutes } from './app/Routes/resturant.route';
 import { menuroutes } from './app/Routes/menu.route';
 import { orderRoutes } from './app/Routes/order.route';
 
-
 const app: Application = express();
 
-//parsers
+// Define allowed origins
+const allowedOrigins = ['http://localhost:5173', 'https://food-service-server-alpi.vercel.app/'];
+
+// Configure CORS
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true, // Allow cookies/authorization headers if needed
+  })
+);
+
+// Parsers
 app.use(express.json());
-app.use(cors());
 
-// application routes
-app.use("/api/v1/user", userRoutes);
-app.use("/api/v1/resturant", restaurantRoutes);
-app.use("/api/v1/menu", menuroutes);
-app.use("/api/v1/order", orderRoutes);
+// Application routes
+app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/resturant', restaurantRoutes);
+app.use('/api/v1/menu', menuroutes);
+app.use('/api/v1/order', orderRoutes);
 
-app.use('/',async(req:Request,res:Response)=>{
-    res.send('server is running..!')
-})
-
-
-
+// Default route
+app.use('/', async (req: Request, res: Response) => {
+  res.send('Server is running..!');
+});
 
 export default app;
