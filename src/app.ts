@@ -1,4 +1,5 @@
 import cors from 'cors';
+import cookieParser from "cookie-parser";
 import express, { Application, Request, Response } from 'express';
 import { userRoutes } from './app/Routes/user.route';
 import { restaurantRoutes } from './app/Routes/resturant.route';
@@ -26,7 +27,7 @@ app.use(
 
 // Parsers
 app.use(express.json());
-
+app.use(cookieParser());
 // Application routes
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/resturant', restaurantRoutes);

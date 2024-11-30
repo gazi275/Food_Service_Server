@@ -10,6 +10,7 @@ import { generateVerificationCode } from "../utils/generateVerificationCode";
 import { generateToken } from "../utils/generateToken";
 import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/email";
 import cloudinary from "../utils/cloudinary";
+import uploadImageOnCloudinary from "../utils/imageUploads";
 
 export const signup = async (req: Request, res: Response) => {
     try {
@@ -217,25 +218,54 @@ export const checkAuth = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-export const updateProfile = async (req: Request, res: Response) => {
-    try {
-        const userId = req.id;
-        const { fullname, email, address, city, country, profilePicture } = req.body;
-        // upload image on cloudinary
-        let cloudResponse: any;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        cloudResponse = await cloudinary.uploader.upload(profilePicture);
-        const updatedData = {fullname, email, address, city, country, profilePicture};
 
-        const user = await User.findByIdAndUpdate(userId, updatedData,{new:true}).select("-password");
+ // Adjust path as per your file structure
 
-        return res.status(200).json({
-            success:true,
-            user,
-            message:"Profile updated successfully"
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-}
+
+ 
+ export const updateProfile = async (req: Request, res: Response) => {
+     try {
+         const userId = req.id; // Ensure req.id is set by authentication middleware
+         const { fullname, email, address, city, country } = req.body;
+ 
+         // Step 1: Validate incoming data
+         if (!fullname || !email) {
+             return res.status(400).json({ message: "Fullname and email are required" });
+         }
+ 
+         // Step 2: Upload profilePicture to Cloudinary (if provided)
+         let profilePictureUrl: string | undefined;
+         if (req.file) {
+             try {
+                 profilePictureUrl = await uploadImageOnCloudinary(req.file);
+             } catch (cloudError) {
+                 console.error("Cloudinary upload error:", cloudError);
+                 return res.status(500).json({ message: "Failed to upload profile picture" });
+             }
+         }
+ 
+         // Step 3: Prepare the data to be updated
+         const updatedData: any = { fullname, email, address, city, country };
+         if (profilePictureUrl) {
+             updatedData.profilePicture = profilePictureUrl;
+         }
+ 
+         // Step 4: Update user in the database
+         const user = await User.findByIdAndUpdate(userId, updatedData, { new: true }).select("-password");
+         if (!user) {
+             return res.status(404).json({ message: "User not found" });
+         }
+ 
+         // Step 5: Send a success response
+         return res.status(200).json({
+             success: true,
+             user,
+             message: "Profile updated successfully",
+         });
+     } catch (error: any) {
+         console.error("Error in updateProfile:", error.message);
+         return res.status(500).json({ message: "Internal server error" });
+     }
+ };
+ 
+
