@@ -12,10 +12,14 @@ declare global {
 
 export const isAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Log cookies for debugging
-        console.log("Cookies received:", req.cookies);
+        let token = req.cookies?.token; // Check cookies first
+        if (!token) {
+            const authHeader = req.headers.authorization; // Check Authorization header
+            if (authHeader && authHeader.startsWith("Bearer ")) {
+                token = authHeader.split(" ")[1]; // Extract token from Bearer header
+            }
+        }
 
-        const token = req.cookies?.token; // Use optional chaining to avoid undefined errors
         if (!token) {
             return res.status(401).json({
                 success: false,
@@ -23,11 +27,8 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
             });
         }
 
-        console.log("Token received:", token); // Debugging the token
-
         // Verify the token
         const decode = jwt.verify(token, process.env.SECRET_KEY!) as jwt.JwtPayload;
-        console.log("Decoded token:", decode); // Debug decoded payload
 
         if (!decode || !decode.userId) {
             return res.status(401).json({
