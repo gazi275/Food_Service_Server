@@ -24,7 +24,8 @@ app.use(
     credentials: true, // Allow cookies/authorization headers if needed
   })
 );
-
+app.use(express.json({ limit: "10mb" })); // Adjust limit as needed
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 // Parsers
 app.use(express.json());
 app.use(cookieParser());

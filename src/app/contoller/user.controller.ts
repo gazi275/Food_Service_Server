@@ -8,80 +8,88 @@ import crypto from "crypto";
 
 import { generateVerificationCode } from "../utils/generateVerificationCode";
 import { generateToken } from "../utils/generateToken";
-import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/email";
+import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail } from "../mailtrap/email";
 import cloudinary from "../utils/cloudinary";
 import uploadImageOnCloudinary from "../utils/imageUploads";
 
 export const signup = async (req: Request, res: Response) => {
     try {
-        const { fullname, email, password, contact } = req.body;
-
-        let user = await User.findOne({ email });
-        if (user) {
-            return res.status(400).json({
-                success: false,
-                message: "User already exist with this email"
-            })
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const verificationToken =  generateVerificationCode();
-
-        user = await User.create({
-            fullname,
-            email,
-            password: hashedPassword,
-            contact: Number(contact),
-            verificationToken,
-            verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
-        })
-        generateToken(res,user);
-
-        await sendVerificationEmail(email, verificationToken);
-
-        const userWithoutPassword = await User.findOne({ email }).select("-password");
-        return res.status(201).json({
-            success: true,
-            message: "Account created successfully",
-            user: userWithoutPassword
+      const { fullname, email, password, contact } = req.body;
+  
+      let user = await User.findOne({ email });
+      if (user) {
+        return res.status(400).json({
+          success: false,
+          message: "User already exists with this email",
         });
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const verificationToken = generateVerificationCode();
+  
+      user = await User.create({
+        fullname,
+        email,
+        password: hashedPassword,
+        contact: Number(contact),
+        verificationToken,
+        verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // 1 day expiry
+      });
+  
+      const token = generateToken(res, user);
+  
+      await sendVerificationEmail(email, verificationToken);
+  
+      const userWithoutPassword = await User.findOne({ email }).select("-password");
+      return res.status(201).json({
+        success: true,
+        message: "Account created successfully",
+        token, // Include token in the response
+        user: userWithoutPassword,
+      });
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" })
+      console.error(error);
+      return res.status(500).json({ message: "Internal server error" });
     }
-};
+  };
+
 export const login = async (req: Request, res: Response) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({
-                success: false,
-                message: "Incorrect email or password"
-            });
-        }
-        const isPasswordMatch = await bcrypt.compare(password, user.password);
-        if (!isPasswordMatch) {
-            return res.status(400).json({
-                success: false,
-                message: "Incorrect email or password"
-            });
-        }
-        generateToken(res, user);
-        user.lastLogin = new Date();
-        await user.save();
+  try {
+    const { email, password } = req.body;
 
-        // send user without passowrd
-        const userWithoutPassword = await User.findOne({ email }).select("-password");
-        return res.status(200).json({
-            success: true,
-            message: `Welcome back ${user.fullname}`,
-            user: userWithoutPassword
-        });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" })
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Incorrect email or password",
+      });
     }
-}
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Incorrect email or password",
+      });
+    }
+
+    const token = generateToken(res, user);
+    user.lastLogin = new Date();
+    await user.save();
+
+    const userWithoutPassword = await User.findOne({ email }).select("-password");
+    return res.status(200).json({
+      success: true,
+      message: `Welcome back ${user.fullname}`,
+      token, // Include token in the response
+      user: userWithoutPassword,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 
 export const findUser=async(req:Request,res:Response)=>{
     try {
@@ -97,36 +105,7 @@ export const findUser=async(req:Request,res:Response)=>{
         return res.status(500).json({ message: "User not created" }) 
     }
 }
-export const verifyEmail = async (req: Request, res: Response) => {
-    try {
-        const { verificationCode } = req.body;
-       
-        const user = await User.findOne({ verificationToken: verificationCode, verificationTokenExpiresAt: { $gt: Date.now() } }).select("-password");
 
-        if (!user) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid or expired verification token"
-            });
-        }
-        user.isVerified = true;
-        user.verificationToken = undefined;
-        user.verificationTokenExpiresAt = undefined
-        await user.save();
-
-        // send welcome email
-        await sendWelcomeEmail(user.email, user.fullname);
-
-        return res.status(200).json({
-            success: true,
-            message: "Email verified successfully.",
-            user,
-        })
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" })
-    }
-}
 export const logout = async (_: Request, res: Response) => {
     try {
         return res.clearCookie("token").status(200).json({
@@ -223,49 +202,46 @@ export const checkAuth = async (req: Request, res: Response) => {
 
 
  
- export const updateProfile = async (req: Request, res: Response) => {
-     try {
-         const userId = req.id; // Ensure req.id is set by authentication middleware
-         const { fullname, email, address, city, country } = req.body;
- 
-         // Step 1: Validate incoming data
-         if (!fullname || !email) {
-             return res.status(400).json({ message: "Fullname and email are required" });
-         }
- 
-         // Step 2: Upload profilePicture to Cloudinary (if provided)
-         let profilePictureUrl: string | undefined;
-         if (req.file) {
-             try {
-                 profilePictureUrl = await uploadImageOnCloudinary(req.file);
-             } catch (cloudError) {
-                 console.error("Cloudinary upload error:", cloudError);
-                 return res.status(500).json({ message: "Failed to upload profile picture" });
-             }
-         }
- 
-         // Step 3: Prepare the data to be updated
-         const updatedData: any = { fullname, email, address, city, country };
-         if (profilePictureUrl) {
-             updatedData.profilePicture = profilePictureUrl;
-         }
- 
-         // Step 4: Update user in the database
-         const user = await User.findByIdAndUpdate(userId, updatedData, { new: true }).select("-password");
-         if (!user) {
-             return res.status(404).json({ message: "User not found" });
-         }
- 
-         // Step 5: Send a success response
-         return res.status(200).json({
-             success: true,
-             user,
-             message: "Profile updated successfully",
-         });
-     } catch (error: any) {
-         console.error("Error in updateProfile:", error.message);
-         return res.status(500).json({ message: "Internal server error" });
-     }
- };
- 
+
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = req.id; // Ensure req.id is set by authentication middleware
+    const { fullname, email, address, city, country } = req.body;
+
+    if (!fullname || !email) {
+      return res.status(400).json({ message: "Fullname and email are required" });
+    }
+
+    let profilePictureUrl: string | undefined;
+    if (req.file) {
+      try {
+        profilePictureUrl = await uploadImageOnCloudinary(req.file);
+      } catch (cloudError) {
+        console.error("Cloudinary upload error:", cloudError);
+        return res.status(500).json({ message: "Failed to upload profile picture" });
+      }
+    }
+
+    const updatedData: any = { fullname, email, address, city, country };
+    if (profilePictureUrl) {
+      updatedData.profilePicture = profilePictureUrl;
+    }
+
+    const user = await User.findByIdAndUpdate(userId, updatedData, { new: true }).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user,
+      message: "Profile updated successfully",
+    });
+  } catch (error: any) {
+    console.error("Error in updateProfile:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 
