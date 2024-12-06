@@ -215,6 +215,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 
     let profilePictureUrl: string | undefined;
     if (req.file) {
+        console.log(req.file);
       try {
         profilePictureUrl = await uploadImageOnCloudinary(req.file);
       } catch (cloudError) {
