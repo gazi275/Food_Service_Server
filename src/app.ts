@@ -9,7 +9,7 @@ import { orderRoutes } from './app/Routes/order.route';
 const app: Application = express();
 
 // Define allowed origins
-const allowedOrigins = ['http://localhost:5173', 'https://food-service-server-alpi.vercel.app/'];
+const allowedOrigins = ['https://foody-service.vercel.app', 'https://food-service-server-alpi.vercel.app/'];
 
 // Configure CORS
 app.use(
