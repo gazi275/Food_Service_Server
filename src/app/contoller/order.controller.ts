@@ -146,7 +146,7 @@ export const createLineItems = (checkoutSessionRequest: CheckoutSessionRequest, 
 
         return {
             price_data: {
-                currency: 'inr',
+                currency: 'usd',
                 product_data: {
                     name: menuItem.name,
                     images: [menuItem.image],

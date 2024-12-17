@@ -8,8 +8,8 @@ import crypto from "crypto";
 
 import { generateVerificationCode } from "../utils/generateVerificationCode";
 import { generateToken } from "../utils/generateToken";
-import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail } from "../mailtrap/email";
-import cloudinary from "../utils/cloudinary";
+import { sendPasswordResetEmail, sendResetSuccessEmail } from "../mailtrap/email";
+
 import uploadImageOnCloudinary from "../utils/imageUploads";
 
 export const signup = async (req: Request, res: Response) => {
@@ -38,7 +38,7 @@ export const signup = async (req: Request, res: Response) => {
   
       const token = generateToken(res, user);
   
-      await sendVerificationEmail(email, verificationToken);
+      
   
       const userWithoutPassword = await User.findOne({ email }).select("-password");
       return res.status(201).json({
