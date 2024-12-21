@@ -13,12 +13,12 @@ export const createRestaurant = async (req: Request, res: Response) => {
  
 
         const restaurant = await Restaurant.findOne({ user: req.id });
-        if (restaurant) {
-            return res.status(400).json({
-                success: false,
-                message: "Restaurant already exist for this user"
+         if (restaurant) {
+             return res.status(400).json({
+                 success: false,
+                 message: "Restaurant already exist for this user"
             })
-        }
+     }
         if (!file) {
             return res.status(400).json({
                 success: false,
@@ -159,8 +159,7 @@ export const searchRestaurant = async (req: Request, res: Response) => {
                 { cuisines: { $regex: searchQuery, $options: 'i' } }
             ]
         }
-        // console.log(query);
-        // ["momos", "burger"]
+       
         if(selectedCuisines.length > 0){
             query.cuisines = {$in:selectedCuisines}
         }

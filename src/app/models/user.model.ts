@@ -9,7 +9,7 @@ export interface IUser {
     city:string;
     country:string;
     profilePicture:string;
-    admin:boolean;
+    role:'admin'| 'owner'| 'user',
     lastLogin?: Date;
     isVerified?: boolean;
     resetPasswordToken?:string;
@@ -56,16 +56,17 @@ const userSchema = new mongoose.Schema<IUserDocument>({
         type:String,
         default:"",
     },
-    admin:{type:Boolean, default:false},
+  role:{
+    type:String,
+    enum:['admin','owner','user'],
+    default:'user'
+  },
     // advanced authentication
     lastLogin:{
         type:Date,
         default:Date.now
     },
-    isVerified:{
-        type:Boolean,
-        default:false
-    },
+    
     resetPasswordToken:String,
     resetPasswordTokenExpiresAt:Date,
     verificationToken:String,

@@ -199,6 +199,36 @@ export const checkAuth = async (req: Request, res: Response) => {
 };
 
  // Adjust path as per your file structure
+ export const updateRole = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params; // Get the user's ID from the URL parameters
+    const { role } = req.body; // Get the new role from the request body
+
+    if (!role || !["admin", "owner", "user"].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role specified",
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(id, { role }, { new: true }).select("-password");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Role updated successfully",
+      data: user,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 
  
