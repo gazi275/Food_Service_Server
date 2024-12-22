@@ -1,8 +1,8 @@
-import mongoose, { Document, Schema } from "mongoose";
-import { Restaurant } from "./resturant.model";
+import mongoose, { Document } from "mongoose";
+
 
 export interface IMenu {
-    resturantID:mongoose.Schema.Types.ObjectId;
+    
     name:string;
     description:string;
     price:number;
@@ -14,11 +14,7 @@ export interface IMenuDocument extends IMenu, Document {
 }
 
 const menuSchema = new mongoose.Schema<IMenuDocument>({
-  resturantID:{
-  type: Schema.Types.ObjectId,
-  ref:Restaurant,
-  required:true
-  },
+  
   name:{
     type:String,
     required:true
