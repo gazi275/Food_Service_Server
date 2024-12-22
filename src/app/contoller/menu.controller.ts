@@ -14,10 +14,10 @@ export const addMenu = async (req: Request, res: Response) => {
       const file = req.file;
   
       // Validate required fields
-      if (!name || !description || !price || !resturantID) {
+      if (!name || !description || !price ) {
         return res.status(400).json({
           success: false,
-          message: "All fields (name, description, price, resturantID) are required.",
+          message: "All fields (name, description, price) are required.",
         });
       }
   
@@ -29,7 +29,7 @@ export const addMenu = async (req: Request, res: Response) => {
       }
   
       // Check if the restaurant exists and belongs to the logged-in user
-      const restaurant = await Restaurant.findOne({ _id: resturantID, user: req.id });
+      const restaurant = await Restaurant.findOne({  user: req.id });
       if (!restaurant) {
         return res.status(404).json({
           success: false,
@@ -46,7 +46,7 @@ export const addMenu = async (req: Request, res: Response) => {
         description,
         price,
         image: imageUrl,
-        resturant_Id: restaurant._id, 
+        
       });
   
    
